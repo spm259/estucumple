@@ -1,0 +1,16 @@
+# Python files
+__pycache__/
+*.py[cod]
+venv/
+
+# Environment variables
+.env
+
+# IDE settings
+.vscode/
+
+# Node modules (if using Node.js for frontend)
+node_modules/
+
+# Logs
+*.log
