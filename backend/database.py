@@ -1,9 +1,7 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import os
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./es_tu_cumple.db")
+from .config import DATABASE_URL
 
 # create an engine, which is responsible for managing the connection to the database.
 # DATABASE_URL tells the engine which database to connect to.

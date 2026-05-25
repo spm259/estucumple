@@ -1,18 +1,30 @@
-# The schemas.py file defines the expected shape of data, both when receiving from the user and when returning data.
-# Pydantic is a data validation and parsing library that works well with FastAPI. 
+"""Pydantic schemas describing the shape of data in/out of the API."""
+from typing import Optional
 
-from pydantic import BaseModel
-from datetime import date
+from pydantic import BaseModel, ConfigDict, Field
 
-# Schema for creating a new contact (used when users add a new contact)
+
 class ContactCreate(BaseModel):
     name: str
-    birthday: date
+    birth_month: int = Field(ge=1, le=12)
+    birth_day: int = Field(ge=1, le=31)
+    birth_year: Optional[int] = None
 
-# Schema for returning a contact (used when we fetch data to return to users)
+
 class Contact(ContactCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     user_id: int
 
-    class Config:
-        orm_mode = True
+
+class UserBase(BaseModel):
+    phone_number: str
+    name: Optional[str] = None
+    timezone: Optional[str] = None
+
+
+class User(UserBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
