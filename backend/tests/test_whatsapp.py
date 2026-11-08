@@ -28,3 +28,8 @@ def test_verify_signature_invalid(monkeypatch):
 def test_verify_signature_no_secret(monkeypatch):
     monkeypatch.setattr(config, "KAPSO_WEBHOOK_SECRET", "")
     assert whatsapp.verify_signature(b"payload", "anything") is False
+
+
+def test_verify_signature_non_ascii_is_rejected(monkeypatch):
+    monkeypatch.setattr(config, "KAPSO_WEBHOOK_SECRET", "s3cr3t")
+    assert whatsapp.verify_signature(b"payload", "é" * 64) is False

@@ -15,13 +15,14 @@ from sqlalchemy.orm import Session
 from . import crud, schemas
 
 HELP_TEXT = (
-    "🎂 *Recordatorio de Cumpleaños*\n\n"
+    "🎂 *Es tu Cumple*\n\n"
+    "Guarda cumpleaños y recibe recordatorios por WhatsApp.\n\n"
     "Comandos disponibles:\n"
-    "• *add* <nombre> <DD/MM> — agregar un cumpleaños\n"
-    "   ej: add Maria 25/05  (o  add Maria 25/05/1990)\n"
-    "• *list* — ver tus cumpleaños guardados\n"
-    "• *delete* <nombre> — eliminar un cumpleaños\n"
-    "• *help* — mostrar esta ayuda"
+    "• *agregar* <nombre> <DD/MM> — guardar un cumpleaños\n"
+    "   Ejemplo: agregar María 25/05 (o agregar María 25/05/1990)\n"
+    "• *lista* — ver tus cumpleaños guardados\n"
+    "• *borrar* <nombre> — eliminar un cumpleaños\n"
+    "• *ayuda* — mostrar esta ayuda"
 )
 
 _ISO = re.compile(r"^(\d{4})-(\d{1,2})-(\d{1,2})$")
@@ -72,13 +73,13 @@ def parse_command(text: str) -> Action:
         if len(tokens) < 3:
             return Action(
                 kind="error",
-                message="Formato: add <nombre> <DD/MM>. Ej: add Maria 25/05",
+                message="Formato: agregar <nombre> <DD/MM>. Ejemplo: agregar María 25/05",
             )
         date = _parse_date(tokens[-1])
         if date is None:
             return Action(
                 kind="error",
-                message="Fecha inválida. Usá DD/MM o DD/MM/AAAA. Ej: 25/05",
+                message="Fecha inválida. Usa DD/MM o DD/MM/AAAA. Ejemplo: 25/05",
             )
         name = " ".join(tokens[1:-1]).strip()
         if not name:
@@ -89,7 +90,7 @@ def parse_command(text: str) -> Action:
     if cmd in ("delete", "eliminar", "borrar", "del", "rm"):
         if len(tokens) < 2:
             return Action(
-                kind="error", message="Formato: delete <nombre>. Ej: delete Maria"
+                kind="error", message="Formato: borrar <nombre>. Ejemplo: borrar María"
             )
         arg = " ".join(tokens[1:]).strip()
         if arg.isdigit():
@@ -97,7 +98,7 @@ def parse_command(text: str) -> Action:
         return Action(kind="delete", name=arg)
 
     return Action(
-        kind="error", message="No entendí ese comando. Escribí *help* para ver las opciones."
+        kind="error", message="No entendí ese comando. Escribe *ayuda* para ver las opciones."
     )
 
 
@@ -133,7 +134,7 @@ def handle_message(db: Session, from_phone: str, text: str) -> str:
     if action.kind == "list":
         contacts = crud.list_contacts(db, user.id)
         if not contacts:
-            return "Todavía no tenés cumpleaños guardados. Probá: add Maria 25/05"
+            return "Todavía no tienes cumpleaños guardados. Prueba: agregar María 25/05"
         lines = [f"• {c.name} — {_format_date(c)}" for c in contacts]
         return "🎉 Tus cumpleaños:\n" + "\n".join(lines)
 

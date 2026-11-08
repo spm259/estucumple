@@ -17,6 +17,8 @@ KAPSO_PHONE_NUMBER_ID = os.getenv("KAPSO_PHONE_NUMBER_ID", "")
 KAPSO_WEBHOOK_SECRET = os.getenv("KAPSO_WEBHOOK_SECRET", "")
 
 # --- Reminders ---
+# Keep proactive sends off while testing in the Kapso sandbox.
+ENABLE_REMINDERS = os.getenv("ENABLE_REMINDERS", "false").lower() == "true"
 # Approved WhatsApp template used for the proactive (outside-24h) daily reminder.
 REMINDER_TEMPLATE_NAME = os.getenv("REMINDER_TEMPLATE_NAME", "birthday_reminder")
 REMINDER_TEMPLATE_LANG = os.getenv("REMINDER_TEMPLATE_LANG", "es")

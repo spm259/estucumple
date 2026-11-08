@@ -17,3 +17,10 @@ node_modules/
 
 # Logs
 *.log
+
+# macOS
+.DS_Store
+
+# Local-only notes and company context
+CLAUDE.md
+company-context/
