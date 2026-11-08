@@ -1,3 +1,5 @@
+import pytest
+
 from backend import bot, crud
 
 
@@ -67,3 +69,23 @@ def test_handle_message_is_per_user(db):
     bot.handle_message(db, "111", "add Ana 01/01")
     other = bot.handle_message(db, "222", "list")
     assert "Ana" not in other  # users don't see each other's contacts
+
+
+@pytest.mark.parametrize("command,kind", [
+    ("agregar María 25/05", "add"),
+    ("lista", "list"),
+    ("borrar María", "delete"),
+    ("ayuda", "help"),
+])
+def test_spanish_commands(command, kind):
+    assert bot.parse_command(command).kind == kind
+
+
+def test_spanish_help_and_recovery_copy(db):
+    help_text = bot.handle_message(db, "525500001111", "hola")
+    assert "Es tu Cumple" in help_text
+    for command in ["agregar", "lista", "borrar", "ayuda"]:
+        assert f"*{command}*" in help_text
+    assert "Escribe *ayuda*" in bot.handle_message(db, "525500001111", "???")
+    assert "Usa DD/MM" in bot.handle_message(db, "525500001111", "agregar María 99/99")
+    assert "tienes" in bot.handle_message(db, "525500001111", "lista")

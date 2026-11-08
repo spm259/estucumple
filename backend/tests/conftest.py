@@ -8,6 +8,11 @@ from backend.database import Base
 
 
 @pytest.fixture
+def anyio_backend():
+    return "asyncio"
+
+
+@pytest.fixture
 def db():
     engine = create_engine(
         "sqlite://",
