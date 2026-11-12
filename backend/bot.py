@@ -8,6 +8,7 @@ Strict command grammar (no NLP):
 """
 import re
 from dataclasses import dataclass
+from datetime import date
 from typing import Optional
 
 from sqlalchemy.orm import Session
@@ -50,7 +51,10 @@ def _parse_date(token: str) -> Optional[tuple]:
             return None
         day, month = int(parts[0]), int(parts[1])
         year = int(parts[2]) if len(parts) == 3 else None
-    if not (1 <= month <= 12 and 1 <= day <= 31):
+    try:
+        # A leap year allows February 29 when the birth year is unknown.
+        date(year if year is not None else 2000, month, day)
+    except (ValueError, OverflowError):
         return None
     return day, month, year
 

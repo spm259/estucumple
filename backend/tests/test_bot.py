@@ -27,6 +27,44 @@ def test_parse_add_invalid_date():
     assert a.kind == "error"
 
 
+@pytest.mark.parametrize("day,month", [(31, 2), (30, 2), (31, 4), (31, 6), (31, 9), (31, 11)])
+@pytest.mark.parametrize("date_format", ["{day:02}/{month:02}", "{day:02}/{month:02}/2024", "2024-{month:02}-{day:02}"])
+def test_reject_impossible_calendar_dates(db, day, month, date_format):
+    token = date_format.format(day=day, month=month)
+    reply = bot.handle_message(db, "525500001111", f"agregar María {token}")
+    assert reply == "Fecha inválida. Usa DD/MM o DD/MM/AAAA. Ejemplo: 25/05"
+    user = crud.get_or_create_user_by_phone(db, "525500001111")
+    assert crud.list_contacts(db, user.id) == []
+
+
+@pytest.mark.parametrize("token", [
+    "29/02/2023", "2023-02-29", "29/02/1900", "1900-02-29",
+    "01/01/0000", "0000-01-01", "01/01/10000", "01/01/99999999999999999999",
+])
+def test_parse_add_invalid_year_dates(token):
+    action = bot.parse_command(f"agregar María {token}")
+    assert action.kind == "error"
+    assert action.message == "Fecha inválida. Usa DD/MM o DD/MM/AAAA. Ejemplo: 25/05"
+
+
+@pytest.mark.parametrize("token,expected", [
+    ("29/02", (29, 2, None)),
+    ("29/02/2024", (29, 2, 2024)),
+    ("2024-02-29", (29, 2, 2024)),
+    ("29/02/2000", (29, 2, 2000)),
+    ("2000-02-29", (29, 2, 2000)),
+    ("28/02/2023", (28, 2, 2023)),
+    ("30/04", (30, 4, None)),
+    ("31/12", (31, 12, None)),
+    ("25/05", (25, 5, None)),
+    ("25/05/1990", (25, 5, 1990)),
+])
+def test_parse_add_valid_calendar_dates(token, expected):
+    action = bot.parse_command(f"agregar María {token}")
+    assert action.kind == "add"
+    assert (action.day, action.month, action.year) == expected
+
+
 def test_parse_add_missing_date():
     assert bot.parse_command("add Maria").kind == "error"
 
@@ -35,6 +73,7 @@ def test_parse_list_and_help_aliases():
     assert bot.parse_command("list").kind == "list"
     assert bot.parse_command("lista").kind == "list"
     assert bot.parse_command("hola").kind == "help"
+    assert bot.parse_command("help").kind == "help"
     assert bot.parse_command("").kind == "help"
 
 
