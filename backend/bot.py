@@ -123,16 +123,23 @@ def handle_message(db: Session, from_phone: str, text: str) -> str:
         return action.message or HELP_TEXT
 
     if action.kind == "add":
-        contact = crud.create_contact(
-            db,
-            user.id,
-            schemas.ContactCreate(
-                name=action.name,
-                birth_month=action.month,
-                birth_day=action.day,
-                birth_year=action.year,
-            ),
-        )
+        try:
+            contact = crud.create_contact(
+                db,
+                user.id,
+                schemas.ContactCreate(
+                    name=action.name,
+                    birth_month=action.month,
+                    birth_day=action.day,
+                    birth_year=action.year,
+                ),
+            )
+        except crud.DuplicateContactNameError as error:
+            saved = error.contact
+            return (
+                f"Ya tienes guardado el cumpleaños de {saved.name} ({_format_date(saved)}). "
+                "Si quieres cambiar la fecha, borra el contacto y agrégalo de nuevo."
+            )
         return f"✅ Guardado: {contact.name} — {_format_date(contact)}"
 
     if action.kind == "list":

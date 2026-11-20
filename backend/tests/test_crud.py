@@ -44,3 +44,14 @@ def test_delete_scoped_to_user(db):
     # Another user cannot delete it.
     assert crud.delete_contact_by_id(db, other.id, c.id) is None
     assert crud.delete_contact_by_id(db, user.id, c.id) is not None
+
+
+def test_create_contact_treats_wildcards_as_literal_characters(db):
+    user = crud.get_or_create_user_by_phone(db, "111")
+
+    for name in ("Ana M", "Ana%", "Ana_"):
+        crud.create_contact(
+            db, user.id, schemas.ContactCreate(name=name, birth_month=1, birth_day=1)
+        )
+
+    assert {c.name for c in crud.list_contacts(db, user.id)} == {"Ana M", "Ana%", "Ana_"}

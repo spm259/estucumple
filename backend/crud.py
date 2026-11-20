@@ -1,9 +1,19 @@
 from datetime import date
+from threading import Lock
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
 from . import models, schemas
+
+# Keep the lookup and insert together for concurrent requests in this process.
+_contact_creation_lock = Lock()
+
+
+class DuplicateContactNameError(Exception):
+    def __init__(self, contact: models.Contact) -> None:
+        super().__init__("A contact with this name already exists")
+        self.contact = contact
 
 
 def get_or_create_user_by_phone(db: Session, phone_number: str) -> models.User:
@@ -24,17 +34,30 @@ def get_or_create_user_by_phone(db: Session, phone_number: str) -> models.User:
 def create_contact(
     db: Session, user_id: int, contact: schemas.ContactCreate
 ) -> models.Contact:
-    db_contact = models.Contact(
-        user_id=user_id,
-        name=contact.name,
-        birth_month=contact.birth_month,
-        birth_day=contact.birth_day,
-        birth_year=contact.birth_year,
-    )
-    db.add(db_contact)
-    db.commit()
-    db.refresh(db_contact)
-    return db_contact
+    """Save a birthday or raise DuplicateContactNameError with the saved contact."""
+    folded_name = contact.name.casefold()
+    with _contact_creation_lock:
+        existing_contacts = (
+            db.query(models.Contact)
+            .filter(models.Contact.user_id == user_id)
+            .order_by(models.Contact.id)
+        )
+        # SQLite's case-insensitive matching does not cover names like MARÍA.
+        for existing in existing_contacts:
+            if existing.name.casefold() == folded_name:
+                raise DuplicateContactNameError(existing)
+
+        db_contact = models.Contact(
+            user_id=user_id,
+            name=contact.name,
+            birth_month=contact.birth_month,
+            birth_day=contact.birth_day,
+            birth_year=contact.birth_year,
+        )
+        db.add(db_contact)
+        db.commit()
+        db.refresh(db_contact)
+        return db_contact
 
 
 def list_contacts(db: Session, user_id: int) -> List[models.Contact]:

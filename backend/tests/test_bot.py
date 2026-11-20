@@ -128,3 +128,48 @@ def test_spanish_help_and_recovery_copy(db):
     assert "Escribe *ayuda*" in bot.handle_message(db, "525500001111", "???")
     assert "Usa DD/MM" in bot.handle_message(db, "525500001111", "agregar María 99/99")
     assert "tienes" in bot.handle_message(db, "525500001111", "lista")
+
+
+@pytest.mark.parametrize(
+    "retry",
+    [
+        "agregar María 25/05",
+        "agregar maría 25/05",
+        "agregar MARÍA 25/05",
+        "agregar María 26/05",
+    ],
+)
+def test_duplicate_contact_replies_with_saved_birthday(db, retry):
+    phone = "111"
+    assert bot.handle_message(db, phone, "agregar María 25/05") == "✅ Guardado: María — 25/05"
+
+    reply = bot.handle_message(db, phone, retry)
+    assert "Ya tienes guardado el cumpleaños de María (25/05)." in reply
+    assert "✅ Guardado:" not in reply
+
+    user = crud.get_or_create_user_by_phone(db, phone)
+    contacts = crud.list_contacts(db, user.id)
+    assert [(c.name, c.birth_day, c.birth_month, c.birth_year) for c in contacts] == [
+        ("María", 25, 5, None)
+    ]
+
+
+def test_english_add_alias_reports_duplicate_with_stored_year(db):
+    phone = "111"
+    bot.handle_message(db, phone, "agregar María 25/05/1990")
+
+    assert "María (25/05/1990)" in bot.handle_message(db, phone, "add MARÍA 26/05/1991")
+    assert "María — 25/05/1990" in bot.handle_message(db, phone, "list")
+    assert bot.handle_message(db, phone, "delete María") == "🗑️ Eliminado: María"
+    assert bot.handle_message(db, phone, "add María 26/05") == "✅ Guardado: María — 26/05"
+    assert bot.handle_message(db, phone, "help") == bot.HELP_TEXT
+
+
+def test_distinct_names_and_different_users_can_save_birthdays(db):
+    bot.handle_message(db, "111", "agregar María 25/05")
+    assert bot.handle_message(db, "111", "agregar Ana 01/01") == "✅ Guardado: Ana — 01/01"
+    assert bot.handle_message(db, "222", "agregar María 26/05") == "✅ Guardado: María — 26/05"
+
+    for phone, names in [("111", ["Ana", "María"]), ("222", ["María"])]:
+        user = crud.get_or_create_user_by_phone(db, phone)
+        assert [c.name for c in crud.list_contacts(db, user.id)] == names
