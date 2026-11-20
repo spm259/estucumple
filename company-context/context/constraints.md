@@ -7,9 +7,10 @@ Codex is the intended build assistant. Keep changes small and maintainable.
 
 ## Product and technical limits
 V1 is WhatsApp-based. The current implementation uses Kapso, FastAPI, SQLAlchemy, and APScheduler; SQLite is the default.
-Kapso is implemented, but a permanent provider requirement is UNKNOWN — ask founder.
+Kapso is the provider requested by the founder for the November 12, 2026 revisit.
 The reminder job uses one app-wide timezone; stored user timezones are not used for scheduling.
-Date validation checks day/month ranges, not full calendar validity. February 29 behavior is undefined for non-leap years.
+The WhatsApp command parser validates real calendar dates, including optional birth years. Schema fields still only validate ranges. February 29 reminder behavior is undefined for non-leap years.
+The reminder CronTrigger lacks an explicit timezone and currently uses the host timezone, which can differ from APP_TIMEZONE.
 Inbound deduplication and deferred replies are in memory and can be lost on restart. Reminder logs do not establish a concurrent-send guarantee.
 The frontend has no package manifest or connected signup action.
 
@@ -24,4 +25,4 @@ Consent, retention, deletion policy, legal jurisdiction, and compliance requirem
 Do not invent business facts or broaden the approved V1.
 Founder-specific hard no's and approval thresholds for deployment, spending, or external actions: UNKNOWN — ask founder.
 
-Sources: founder answers on 2026-10-04; `README.md`, `backend/config.py`, `backend/main.py`, `backend/bot.py`, `backend/scheduler.py`, `frontend/page.tsx`.
+Sources: founder answers on 2026-10-04 and provider request on 2026-11-12; code review and local trigger-timezone check on 2026-11-12; `README.md`, `backend/config.py`, `backend/main.py`, `backend/bot.py`, `backend/schemas.py`, `backend/scheduler.py`, `frontend/page.tsx`.

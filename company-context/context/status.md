@@ -1,11 +1,13 @@
 # Status
 
-As of 2026-10-05.
+As of 2026-11-19.
 
 ## Now
-- Founder confirms Es tu Cumple is not deployed or in use.
+- Last founder-confirmed status: Es tu Cumple is not deployed or in use. This review did not inspect a deployment or the provider account.
 - WhatsApp commands, per-user storage, and a daily reminder job exist in code.
-- All 60 backend tests pass locally on Python 3.12, including signed webhook and Spanish command flows with mocked outbound sends.
+- All 103 backend tests pass locally, including signed webhook and Spanish command flows with mocked outbound sends.
+- The birthday command now rejects impossible calendar dates; February 29 in non-leap reminder years remains undecided.
+- Adding the same contact name again ignores letter case and returns the original saved birthday for that user.
 - Live WhatsApp conversation and reminder delivery remain unverified.
 - Kapso v2, buffered v2, forwarded Meta, and legacy text payloads are parsed. Phone-less BSUID events are ignored.
 - Webhooks require valid signatures. Replies run after acknowledgment; scheduling defaults to off for the sandbox.
@@ -14,12 +16,14 @@ As of 2026-10-05.
 
 ## This week
 The first session's code and local checks are complete. The next check is a real sandbox conversation.
-Launch is the Q4 goal. Other weekly priorities and launch date: UNKNOWN — ask founder.
+Launch is the Q4 goal. The [proposed plan](../../PLAN.md) records the November 12 review and delivery sequence; it is not founder-approved scope. Weekly priorities and launch date: UNKNOWN — ask founder.
 
 ## Blockers
-Local Kapso API key, sandbox phone-number ID, and webhook secret are missing. Sandbox activation and a public HTTPS webhook are still needed.
+On November 12, local preflight reported the Kapso API key, sandbox phone-number ID, and webhook secret missing or invalid. Sandbox activation and a public HTTPS webhook are still needed.
 Production reminder-template approval: UNKNOWN — ask founder.
-Durable deduplication, reply recovery, and full calendar validation remain unresolved launch work.
+Durable deduplication, reply recovery, and delivery tracking remain unresolved launch work.
+The November 12 review confirmed that the reminder trigger defaults to the host timezone. It needs to use `APP_TIMEZONE`.
+Phone-less BSUID users are ignored by the current implementation; support remains a broader-release compatibility gap.
 
 ## Open questions
 - What evidence and checks define a successful V1 launch?
@@ -28,4 +32,4 @@ Durable deduplication, reply recovery, and full calendar validation remain unres
 - What consent, retention, and approval rules apply?
 - Is helping users send greetings limited to reminders, or is any additional workflow intended?
 
-Sources: founder answers on 2026-10-04; code, local preflight, and backend tests on 2026-10-05. No live provider or production checks were performed.
+Sources include founder answers from October 4, the November 12 preflight and timezone check, and the November 19 code review and backend tests. Live provider and production verification are pending.

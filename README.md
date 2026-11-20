@@ -22,6 +22,7 @@ Phone-less BSUID events are currently ignored; they are not used as phone destin
 The bot reminds the user. It does not send birthday greetings to their contacts.
 
 Company and product context starts in [company-context/CLAUDE.md](company-context/CLAUDE.md).
+The repository review and proposed launch sequence are in [PLAN.md](PLAN.md).
 
 ## Bot commands
 
@@ -34,6 +35,8 @@ ayuda                            usage
 ```
 
 English commands (`add`, `list`, `delete`, `help`) still work. Replies use Mexican Spanish.
+Adding the same name again, regardless of case, shows that user's saved birthday.
+To change the date, delete the contact and add it again.
 
 ## First session: sandbox conversation
 
